@@ -1,11 +1,18 @@
-const defaultContainerStyles = {
+import React from "react";
+
+type CoinbaseWalletLogoProps = {
+  size?: number;
+  containerStyles?: React.CSSProperties;
+};
+
+const defaultContainerStyles: React.CSSProperties = {
   paddingTop: 2,
 };
 
 export function CoinbaseWalletLogo({
   size = 26,
   containerStyles = defaultContainerStyles,
-}) {
+}: CoinbaseWalletLogoProps) {
   return (
     <div style={containerStyles}>
       <svg

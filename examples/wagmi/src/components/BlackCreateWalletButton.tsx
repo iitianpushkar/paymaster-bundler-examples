@@ -1,21 +1,25 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useConnect } from "wagmi";
+import { useConnect,useDisconnect } from "wagmi";
 import { CoinbaseWalletLogo } from "./CoinbaseWalletLogo";
 import { useAccount } from "wagmi";
 
 const GRADIENT_BORDER_WIDTH = 2;
 
-const buttonStyles = {
+const buttonStyles: React.CSSProperties = {
   background: "transparent",
   border: "1px solid transparent",
-  boxSizing: "border-box",
+  boxSizing: "border-box" as const,
 };
 
-const contentWrapperStyle = {
-  position: "relative",
+const contentWrapperStyle: React.CSSProperties = {
+  position: "relative" as const,
 };
 
-function Gradient({ children, style, isAnimationDisabled = false }) {
+function Gradient({ children, style, isAnimationDisabled = false }: { 
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+  isAnimationDisabled?: boolean;
+}) {
   const [isAnimating, setIsAnimating] = useState(false);
   const gradientStyle = useMemo(() => {
     const rotate = isAnimating ? "720deg" : "0deg";
@@ -51,27 +55,27 @@ function Gradient({ children, style, isAnimationDisabled = false }) {
   );
 }
 
-export function BlackCreateWalletButton({ height = 66, width = 200 }) {
+export function BlackCreateWalletButton({ height = 44, width = 180 }) {
   const { connectors, connect } = useConnect();
   const account = useAccount();
 
-  const minButtonHeight = 48;
-  const minButtonWidth = 200;
-  const buttonHeight = Math.max(minButtonHeight, height);
-  const buttonWidth = Math.max(minButtonWidth, width);
+  const {disconnect} = useDisconnect()
+
+  const buttonHeight =  height;
+  const buttonWidth = width;
   const gradientDiameter = Math.max(buttonHeight, buttonWidth);
   const styles = useMemo(
     () => ({
       gradientContainer: {
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        display: "flex" as const,
+        justifyContent: "center" as const,
+        alignItems: "center" as const,
         backgroundColor: "black",
         borderRadius: buttonHeight / 2,
         height: buttonHeight,
         width: buttonWidth,
-        boxSizing: "border-box",
-        overflow: "hidden",
+        boxSizing: "border-box" as const,
+        overflow: "hidden" as const,
       },
       gradient: {
         background:
@@ -81,7 +85,7 @@ export function BlackCreateWalletButton({ height = 66, width = 200 }) {
         left: -GRADIENT_BORDER_WIDTH,
         width: gradientDiameter,
         height: gradientDiameter,
-      },
+      } as  React.CSSProperties,
       buttonBody: {
         display: "flex",
         justifyContent: "center",
@@ -96,27 +100,34 @@ export function BlackCreateWalletButton({ height = 66, width = 200 }) {
         borderRadius: buttonHeight / 2,
         position: "relative",
         paddingRight: 10,
-      },
+      } as React.CSSProperties,
     }),
     [buttonHeight, buttonWidth, gradientDiameter]
   );
 
   const createWallet = useCallback(() => {
-    const coinbaseWalletConnector = connectors.find(
-      (connector) => connector.id === "coinbaseWalletSDK"
-    );
-    if (coinbaseWalletConnector) {
-      connect({ connector: coinbaseWalletConnector });
+
+    if(account.isConnected){    
+        disconnect();
     }
-  }, [connectors, connect]);
+    else{
+        const coinbaseWalletConnector = connectors.find(
+            (connector) => connector.id === "coinbaseWalletSDK"
+          );
+          if (coinbaseWalletConnector) {
+            connect({ connector: coinbaseWalletConnector });
+          }
+    }
+  }, [account.isConnected,connectors, connect,disconnect]);
 
   return (
+
     <button style={buttonStyles} onClick={createWallet}>
       <div style={styles.gradientContainer}>
         <Gradient style={styles.gradient}>
           <div style={styles.buttonBody}>
             <CoinbaseWalletLogo containerStyles={{ paddingRight: 10 }} />
-            {account.isConnected ? "Connected" : "Create Wallet"}
+            {account.isConnected ? `Connected` : "Create Wallet"}
           </div>
         </Gradient>
       </div>
